@@ -1,0 +1,552 @@
+openapi: 3.0.0
+info:
+  title: Social Network API
+  version: 1.0.0
+  description: API для социальной сети, связанной с путешествиями
+
+servers:
+  - url: https://api.social-network.com/v1
+    description: Prod API
+  - url: https://devapi.social-network.com/v1
+    description: Dev API
+
+paths:
+  /posts:
+    post:
+      summary: Публикация поста
+      description: Позволяет пользователю опубликовать пост о путешествии.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - text
+                - photos
+                - place_id
+                - user_id
+              properties:
+                text:
+                  type: string
+                  description: Текст поста (обязательное поле)
+                photos:
+                  type: array
+                  items:
+                    type: string
+                    description: Фото в формате Base64 (обязательное поле)
+                place_id:
+                  type: integer
+                  description: Идентификатор места (обязательное поле)
+                user_id:
+                  type: integer
+                  description: Идентификатор пользователя, который публикует пост (обязательное поле)
+      responses:
+        '200':
+          description: Пост успешно опубликован
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                properties: {}
+        '400':
+          description: Ошибка валидации
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: string
+                    example: VALIDATION_ERROR
+                  message:
+                    type: string
+                    example: "Неверный запрос"
+        '500':
+          description: Ошибка на сервере
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: string
+                    example: INTERNAL_SERVER_ERROR
+                  message:
+                    type: string
+                    example: "Ошибка при публикации поста. Пожалуйста, повторите попытку позже."
+
+  /posts/{post_id}/comments:
+    post:
+      summary: Публикация комментария
+      description: Позволяет пользователю оставить комментарий к посту.
+      parameters:
+        - name: post_id
+          in: path
+          required: true
+          description: Идентификатор поста
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - user_id
+                - text
+              properties:
+                user_id:
+                  type: integer
+                  description: Идентификатор пользователя, который оставляет комментарий
+                text:
+                  type: string
+                  description: Текст комментария
+      responses:
+        '200':
+          description: Комментарий успешно опубликован
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Комментарий успешно опубликован."
+        '400':
+          description: Ошибка валидации
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: string
+                    example: VALIDATION_ERROR
+                  message:
+                    type: string
+                    example: "Неверный запрос"
+        '500':
+          description: Ошибка на сервере
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: string
+                    example: INTERNAL_SERVER_ERROR
+                  message:
+                    type: string
+                    example: "Ошибка при публикации комментария. Пожалуйста, повторите попытку позже."
+
+  /posts/{post_id}/reactions:
+    post:
+      summary: Публикация реакции
+      description: Позволяет пользователю оставить реакцию на пост.
+      parameters:
+        - name: post_id
+          in: path
+          required: true
+          description: Идентификатор поста
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - user_id
+                - type
+              properties:
+                user_id:
+                  type: integer
+                  description: Идентификатор пользователя, который оставляет реакцию
+                type:
+                  type: string
+                  enum: [like, love, wow, sad, angry]
+                  description: Тип реакции
+      responses:
+        '200':
+          description: Реакция успешно добавлена
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Реакция успешно добавлена."
+        '400':
+          description: Ошибка валидации
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: string
+                    example: VALIDATION_ERROR
+                  message:
+                    type: string
+                    example: "Неверный запрос"
+        '500':
+          description: Ошибка на сервере
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: string
+                    example: INTERNAL_SERVER_ERROR
+                  message:
+                    type: string
+                    example: "Ошибка при публикации реакции. Пожалуйста, повторите попытку позже."
+
+  /feeds:
+    get:
+      summary: Просмотр ленты постов
+      description: Получение ленты постов для всех пользователей.
+      parameters:
+        - name: limit
+          in: query
+          required: false
+          description: Количество постов на странице
+          schema:
+            type: integer
+            default: 10
+        - name: offset
+          in: query
+          required: false
+          description: Смещение для пагинации
+          schema:
+            type: integer
+            default: 0
+      responses:
+        '200':
+          description: Лента постов успешно загружена
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    user_id:
+                      type: integer
+                      description: Идентификатор пользователя, который опубликовал пост
+                    post_id:
+                      type: integer
+                      description: Идентификатор поста
+                    place_id:
+                      type: integer
+                      description: Идентификатор места
+                    text:
+                      type: string
+                      description: Текст поста
+                    photos:
+                      type: array
+                      items:
+                        type: string
+                        description: Ссылки на фото
+        '400':
+          description: Ошибка валидации
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: string
+                    example: VALIDATION_ERROR
+                  message:
+                    type: string
+                    example: "Неверный запрос"
+        '500':
+          description: Ошибка на сервере
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: string
+                    example: INTERNAL_SERVER_ERROR
+                  message:
+                    type: string
+                    example: "Ошибка при загрузке ленты постов. Пожалуйста, повторите попытку позже."
+
+  /feeds/{user_id}:
+    get:
+      summary: Просмотр ленты постов конкретного пользователя
+      description: Получение ленты постов для указанного пользователя.
+      parameters:
+        - name: user_id
+          in: path
+          required: true
+          description: Идентификатор пользователя
+          schema:
+            type: integer
+        - name: limit
+          in: query
+          required: false
+          description: Количество постов на странице
+          schema:
+            type: integer
+            default: 10
+        - name: offset
+          in: query
+          required: false
+          description: Смещение для пагинации
+          schema:
+            type: integer
+            default: 0
+      responses:
+        '200':
+          description: Лента постов конкретного пользователя успешно загружена
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    user_id:
+                      type: integer
+                      description: Идентификатор пользователя, который опубликовал пост
+                    post_id:
+                      type: integer
+                      description: Идентификатор поста
+                    place_id:
+                      type: integer
+                      description: Идентификатор места
+                    text:
+                      type: string
+                      description: Текст поста
+                    photos:
+                      type: array
+                      items:
+                        type: string
+                        description: ссылки на фото
+        '400':
+          description: Ошибка валидации
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: string
+                    example: VALIDATION_ERROR
+                  message:
+                    type: string
+                    example: "Неверный запрос"
+        '500':
+          description: Ошибка на сервере
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: string
+                    example: INTERNAL_SERVER_ERROR
+                  message:
+                    type: string
+                    example: "Ошибка при загрузке ленты постов пользователя. Пожалуйста, повторите попытку позже."
+  
+  /users/{user_id}/follow:
+    post:
+      summary: Подписка пользователя на другого
+      description: Позволяет пользователю подписаться на другого пользователя.
+      parameters:
+        - name: user_id
+          in: path
+          required: true
+          description: Идентификатор текущего пользователя (того, кто подписывается)
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - follow_id
+              properties:
+                follow_id:
+                  type: integer
+                  description: Идентификатор пользователя, на которого подписывается текущий пользователь
+      responses:
+        '200':
+          description: Успешная подписка
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "User successfully followed."
+        '400':
+          description: Ошибка валидации
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: string
+                    example: VALIDATION_ERROR
+                  message:
+                    type: string
+                    example: "Invalid user_id or follow_id."
+        '500':
+          description: Ошибка на сервере
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: string
+                    example: INTERNAL_SERVER_ERROR
+                  message:
+                    type: string
+                    example: "Ошибка при подписке. Пожалуйста, повторите попытку позже."
+
+  /users/{user_id}/subscriptions:
+    get:
+      summary: Получение списка подписок пользователя
+      description: Возвращает список пользователей, на которых подписан текущий пользователь.
+      parameters:
+        - name: user_id
+          in: path
+          required: true
+          description: Идентификатор пользователя
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Список подписок успешно загружен
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    user_id:
+                      type: integer
+                      description: Идентификатор пользователя, на которого подписан текущий пользователь
+                    username:
+                      type: string
+                      description: Имя пользователя
+                    photo:
+                      type: string
+                      description: Ссылка на фотографию пользователя
+        '400':
+          description: Ошибка валидации
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: string
+                    example: VALIDATION_ERROR
+                  message:
+                    type: string
+                    example: "Неверный запрос"
+        '500':
+          description: Ошибка на сервере
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: string
+                    example: INTERNAL_SERVER_ERROR
+                  message:
+                    type: string
+                    example: "Ошибка при загрузке списка подписок пользователя. Пожалуйста, повторите попытку позже."
+
+  /places/list:
+    get:
+      summary: Список мест отдыха
+      description: Позволяет искать места отдыха по заданным критериям.
+      parameters:
+        - name: limit
+          in: query
+          required: false
+          description: Количество постов на странице
+          schema:
+            type: integer
+            default: 10
+        - name: offset
+          in: query
+          required: false
+          description: Смещение для пагинации
+          schema:
+            type: integer
+            default: 0
+      responses:
+        '200':
+          description: Результаты поиска успешно загружены
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    place_id:
+                      type: integer
+                      description: Идентификатор места
+                    name:
+                      type: string
+                      description: Название места
+                    category:
+                      type: string
+                      description: Категория места
+                    location:
+                      type: string
+                      description: Локация места
+                    photos:
+                      type: array
+                      items:
+                        type: string
+                        description: Ссылки на фото
+        '400':
+          description: Ошибка валидации
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: string
+                    example: VALIDATION_ERROR
+                  message:
+                    type: string
+                    example: "Неверный запрос"
+        '500':
+          description: Ошибка на сервере
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: string
+                    example: INTERNAL_SERVER_ERROR
+                  message:
+                    type: string
+                    example: "Ошибка при загрузке списка мест отдыха. Пожалуйста, повторите попытку позже."
