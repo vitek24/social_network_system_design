@@ -482,6 +482,21 @@ paths:
     get:
       summary: Список мест отдыха
       description: Позволяет искать места отдыха по заданным критериям.
+      parameters:
+        - name: limit
+          in: query
+          required: false
+          description: Количество постов на странице
+          schema:
+            type: integer
+            default: 10
+        - name: offset
+          in: query
+          required: false
+          description: Смещение для пагинации
+          schema:
+            type: integer
+            default: 0
       responses:
         '200':
           description: Результаты поиска успешно загружены
