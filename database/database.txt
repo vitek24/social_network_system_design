@@ -1,0 +1,96 @@
+https://dbdiagram.io/d/67bf4ecc263d6cf9a0917541
+
+Table follow {
+  id integer [primary key, unique, not null]
+  user_id integer [not null]
+  followed_user_id integer [not null]
+  created_at timestamp [not null]
+
+  indexes {
+    id [name: 'follow_id_index']
+    user_id [name: 'follow_user_id_index']
+    followed_user_id [name: 'follow_followed_user_id_index']
+  }
+}
+
+Table user {
+  id integer [primary key, not null, unique]
+  username varchar [not null]
+  age timestamp [null]
+  role varchar [null]
+  created_at timestamp [not null, default: `now()`]
+  updated_at timestamp [not null]
+
+  indexes {
+    id [name: 'user_id_index']
+  }
+}
+
+Table reaction [headercolor: #1798DB] {
+  id integer [primary key, unique, not null]
+  type varchar [not null]
+  post_id integer [not null]
+  user_id integer [not null]
+  created_at timestamp [not null, default: `now()`]
+
+  indexes {
+    id [name: 'reaction_id_index']
+    post_id [name: 'reaction_post_id_index']
+    user_id [name: 'reaction_user_id_index']
+  }
+}
+
+Table comment {
+  id integer [primary key, unique, not null]
+  text text [note: 'Content of the comment']
+  post_id integer [not null]
+  user_id integer [not null]
+  created_at timestamp [not null, default: `now()`]
+
+  indexes {
+    id [name: 'comment_id_index']
+    post_id [name: 'comment_post_id_index']
+    user_id [name: 'comment_user_id_index']
+  }
+}
+
+Table post {
+  id integer [primary key, unique, not null]
+  text text [note: 'Content of the post']
+  user_id integer [not null]
+  place_id integer [not null]
+  photos jsonb [note: 'Field as urls array']
+  created_at timestamp [not null, default: `now()`]
+
+  indexes {
+    id [name: 'post_id_index']
+    place_id [name: 'post_place_id_index']
+    user_id [name: 'post_user_id_index']
+  }
+}
+
+Table place {
+  id integer [primary key, unique, not null]
+  rating integer [not null]
+  description text [not null]
+  photos jsonb [note: 'Field as urls array']
+  created_at timestamp [not null, default: `now()`]
+
+  indexes {
+    id [name: 'place_id_index']
+  }
+}
+
+Ref: post.place_id > place.id
+
+Ref: reaction.id > post.id
+
+Ref: comment.post_id > post.id
+
+Ref: reaction.user_id > user.id
+
+Ref: comment.user_id > user.id
+
+Ref: post.user_id > user.id // many-to-one
+
+Ref: follow.user_id > user.id
