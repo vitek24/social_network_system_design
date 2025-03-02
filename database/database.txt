@@ -50,7 +50,6 @@ Table comment {
 
   indexes {
     post_id [name: 'comment_post_id_index']
-    user_id [name: 'comment_user_id_index']
   }
 }
 
