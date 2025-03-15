@@ -11,9 +11,16 @@ System_Boundary(commentSystem, "Comment system") {
     ContainerDb(commentStorage, "Comment Storage", "Postgres")
 }
 
-Rel(user, reverseProxy, "CRUD comment", "REST")
-Rel(reverseProxy, apiGateway, "CRUD comment", "REST")
-Rel(apiGateway, commentService, "CRUD comment", "REST")
+System_Boundary(postSystem, "Post system") {
+    Container(postService, "Post Service", "Golang")
+    ContainerDb(postStorage, "Post Storage", "Postgres")
+}
+
+
+Rel(user, reverseProxy, "Create/Update/Delete comment", "REST")
+Rel(reverseProxy, apiGateway, "Create/Update/Delete comment", "REST")
+Rel(apiGateway, commentService, "Create/Update/Delete comment", "REST")
 Rel(commentService, commentStorage, "CRUD comment", "REST")
+Rel(postService, commentService, "Get comments(batch)", "gRPC")
 
 @enduml
