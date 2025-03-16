@@ -5,6 +5,7 @@ Person(user, "User")
 
 Container(reverseProxy, "Reverse proxy", "Nginx")
 Container(apiGateway, "API Gateway", "Golang")
+ContainerQueue(kafka, "Post queue", "Kafka")
 
 System_Boundary(postSystem, "Post system") {
     Container(postService, "Post Service", "Golang")
@@ -40,6 +41,7 @@ Rel(postService, postCache, "Get/Set posts", "REST")
 Rel(commentService, commentCache, "Get/Set comments", "REST")
 Rel(reactionService, reactionCache, "Get/Set reactions", "REST")
 
+Rel(postService, kafka, "Publish post", "Async")
 Rel(postService, commentService, "Get comments(batch)", "gRPC")
 Rel(postService, reactionService, "Get reactions(batch)", "gRPC")
 Rel(feedService, postService, "Get posts(batch)", "gRPC")
