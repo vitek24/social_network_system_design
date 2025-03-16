@@ -5,15 +5,18 @@ Person(user, "User")
 
 Container(reverseProxy, "Reverse proxy", "Nginx")
 Container(apiGateway, "API Gateway", "Golang")
+Container(postKafka, "Post queue", "Kafka")
 
 System_Boundary(reactionSystem, "Reaction system") {
     Container(reactionService, "Reaction Service", "Golang")
     ContainerDb(reactionStorage, "Reaction Storage", "Postgres")
+    ContainerDb(reactionCache, "Reaction Cache", "Redis")
 }
 
 System_Boundary(postSystem, "Post system") {
     Container(postService, "Post Service", "Golang")
     ContainerDb(postStorage, "Post Storage", "Postgres")
+    ContainerDb(postCache, "Post Cache", "Redis")
 }
 
 
@@ -21,6 +24,10 @@ Rel(user, reverseProxy, "Create/Update/Delete reaction", "REST")
 Rel(reverseProxy, apiGateway, "Create/Update/Delete reaction", "REST")
 Rel(apiGateway, reactionService, "Create/Update/Delete reaction", "REST")
 Rel(reactionService, reactionStorage, "CRUD reaction", "REST")
-Rel(postService, reactionService, "Get reactions(batch)", "gRPC")
+Rel(reactionService, reactionCache, "Get/Set reaction", "REST")
+Rel(postService, reactionService, "Get reaction(batch)", "gRPC")
+Rel(postService, postCache, "Get posts(batch)", "REST")
+Rel(postService, postStorage, "CRUD post", "REST")
+Rel(postService, postKafka, "Publish new post for rebuild feed", "Async")
 
 @enduml
