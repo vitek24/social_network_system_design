@@ -12,9 +12,9 @@ System_Boundary(placeSystem, "Place system") {
 }
 
 
-Rel(user, reverseProxy, "CRUD reaction", "REST")
-Rel(reverseProxy, apiGateway, "CRUD reaction", "REST")
-Rel(apiGateway, placeService, "CRUD reaction", "REST")
-Rel(placeService, placeStorage, "CRUD reaction", "REST")
+Rel(user, reverseProxy, "CRUD place", "REST")
+Rel(reverseProxy, apiGateway, "CRUD place", "REST")
+Rel(apiGateway, placeService, "CRUD place", "REST")
+Rel(placeService, placeStorage, "CRUD place", "REST")
 
 @enduml
