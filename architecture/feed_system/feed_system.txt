@@ -1,0 +1,40 @@
+@startuml
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+
+Person(user, "User")
+
+Container(reverseProxy, "Reverse proxy", "Nginx")
+Container(apiGateway, "API Gateway", "Golang")
+ContainerQueue(postKafka, "Post queue", "Kafka")
+ContainerQueue(followKafka, "Follow queue", "Kafka")
+
+System_Boundary(postSystem, "Post system") {
+    Container(postService, "Post Service", "Golang")
+    Container(postCache, "Post Cache", "Redis")
+    ContainerDb(postStorage, "Post Storage", "Postgres")
+}
+
+System_Boundary(feedSystem, "Feed system") {
+    Container(feedService, "Feed Service", "Golang")
+}
+
+System_Boundary(followSystem, "Follow system") {
+    Container(followService, "Follow Service", "Golang")
+    ContainerDb(followStorage, "Follow Storage", "Postgres")
+}
+
+Rel(user, reverseProxy, "Get user/home feed", "REST")
+Rel(reverseProxy, apiGateway, "Get user/home feed", "REST")
+Rel(apiGateway, feedService, "Get user/home feed", "REST")
+
+Rel(followService, followStorage, "CRUD follows", "REST")
+Rel(postService, postStorage, "CRUD posts", "REST")
+Rel(feedService, postKafka, "Pull post for rebuilding feed", "Async")
+Rel(feedService, followKafka, "Pull follow for rebuilding feed", "Async")
+Rel(postService, postKafka, "Publish new post for rebuilding feed", "Async")
+Rel(followService, followKafka, "Publish new follow for rebuilding feed", "Async")
+Rel(feedService, postService, "Get posts(batch)", "gRPC")
+
+Rel(postService, postCache, "Get/Set posts", "REST")
+
+@enduml
