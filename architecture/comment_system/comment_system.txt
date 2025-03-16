@@ -9,11 +9,13 @@ Container(apiGateway, "API Gateway", "Golang")
 System_Boundary(commentSystem, "Comment system") {
     Container(commentService, "Comment Service", "Golang")
     ContainerDb(commentStorage, "Comment Storage", "Postgres")
+    ContainerDb(commentCache, "Comment Cache", "Redis")
 }
 
 System_Boundary(postSystem, "Post system") {
     Container(postService, "Post Service", "Golang")
     ContainerDb(postStorage, "Post Storage", "Postgres")
+    ContainerDb(postCache, "Post Cache", "Redis")
 }
 
 
@@ -21,6 +23,9 @@ Rel(user, reverseProxy, "Create/Update/Delete comment", "REST")
 Rel(reverseProxy, apiGateway, "Create/Update/Delete comment", "REST")
 Rel(apiGateway, commentService, "Create/Update/Delete comment", "REST")
 Rel(commentService, commentStorage, "CRUD comment", "REST")
+Rel(commentService, commentCache, "Get/Set comment", "REST")
 Rel(postService, commentService, "Get comments(batch)", "gRPC")
+Rel(postService, postCache, "Get posts(batch)", "REST")
+Rel(postService, postStorage, "CRUD post", "REST")
 
 @enduml
