@@ -1,0 +1,22 @@
+@startuml
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+
+Person(user, "User")
+
+Container(reverseProxy, "Reverse proxy", "Nginx")
+Container(apiGateway, "API Gateway", "Golang")
+ContainerQueue(followKafka, "Follow queue", "Kafka")
+
+System_Boundary(followSystem, "Follow system") {
+    Container(followService, "Follow Service", "Golang")
+    ContainerDb(followStorage, "Follow Storage", "Postgres")
+}
+
+Rel(user, reverseProxy, "CRUD follow", "REST")
+Rel(reverseProxy, apiGateway, "CRUD follow", "REST")
+Rel(apiGateway, followService, "CRUD follow", "REST")
+
+Rel(followService, followStorage, "CRUD follows", "REST")
+Rel(followService, followKafka, "Publish new follow for rebuilding feed", "Async")
+
+@enduml

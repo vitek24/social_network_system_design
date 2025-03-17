@@ -1,0 +1,49 @@
+@startuml
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+
+Person(user, "User")
+
+Container(reverseProxy, "Reverse proxy", "Nginx")
+Container(apiGateway, "API Gateway", "Golang")
+ContainerQueue(kafka, "Post queue", "Kafka")
+
+System_Boundary(postSystem, "Post system") {
+    Container(postService, "Post Service", "Golang")
+    Container(postCache, "Post Cache", "Redis")
+    ContainerDb(postStorage, "Post Storage", "Postgres")
+}
+
+System_Boundary(commentSystem, "Comment system") {
+    Container(commentService, "Comment Service", "Golang")
+    Container(commentCache, "Comment Cache", "Redis")
+    ContainerDb(commentStorage, "Comment Storage", "Postgres")
+}
+
+System_Boundary(reactionSystem, "Reaction system") {
+    Container(reactionService, "Reaction Service", "Golang")
+    Container(reactionCache, "Reaction Cache", "Redis")
+    ContainerDb(reactionStorage, "Reaction Storage", "Postgres")
+}
+
+System_Boundary(feedSystem, "Feed system") {
+    Container(feedService, "Feed Service", "Golang")
+}
+
+Rel(user, reverseProxy, "Create/Update/Delete post", "REST")
+Rel(reverseProxy, apiGateway, "Create/Update/Delete post", "REST")
+Rel(apiGateway, postService, "Create/Update/Delete post", "REST")
+
+Rel(postService, postStorage, "CRUD posts", "REST")
+Rel(commentService, commentStorage, "CRUD comments", "REST")
+Rel(reactionService, reactionStorage, "CRUD reactions", "REST")
+
+Rel(postService, postCache, "Get/Set posts", "REST")
+Rel(commentService, commentCache, "Get/Set comments", "REST")
+Rel(reactionService, reactionCache, "Get/Set reactions", "REST")
+
+Rel(postService, kafka, "Publish post", "Async")
+Rel(postService, commentService, "Get comments(batch)", "gRPC")
+Rel(postService, reactionService, "Get reactions(batch)", "gRPC")
+Rel(feedService, postService, "Get posts(batch)", "gRPC")
+
+@enduml
